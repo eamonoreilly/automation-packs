@@ -186,7 +186,7 @@
               "name": "[parameters('configurationName')]"
             },
             "parameters": {
-                "VMName": "[parameters('configurationVMParameter')]",
+                "Parameters": "[parameters('configurationVMParameter')]",
                 "ConfigurationData": "[parameters('jobConfigurationData')]"
             }
           }
