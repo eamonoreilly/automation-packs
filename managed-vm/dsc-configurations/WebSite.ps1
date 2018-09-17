@@ -5,24 +5,15 @@ Configuration WebSite
         # Name of the VM for the hybrid worker group 
         [Parameter(Mandatory)] 
         [ValidateNotNullOrEmpty()] 
-        [String]$VMName,
-
-        # Name of the website to create 
-        [Parameter(Mandatory)] 
-        [ValidateNotNullOrEmpty()] 
-        [String]$WebSiteName, 
-       
-        # Source Path for Website content 
-        [Parameter(Mandatory)] 
-        [ValidateNotNullOrEmpty()] 
-        [String]$SourcePath, 
-        
-        # Destination path for Website content 
-        [Parameter(Mandatory)] 
-        [ValidateNotNullOrEmpty()] 
-        [String]$DestinationPath   
-         
+        [String]$Parameters
     ) 
+
+    $InputParams = ConvertFrom-Json $Parameters
+    $VMName = $InputParams.VMName
+    $WebSiteName = $InputParams.WebSiteName
+    $DestinationPath = $InputParams.DestinationPath
+    $SourcePath = $InputParams.SourcePath
+
     # Import the module that defines custom resources 
     Import-DscResource -Module cAzureStorage 
     Import-DscResource -ModuleName xWebAdministration 
