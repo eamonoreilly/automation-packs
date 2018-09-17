@@ -45,6 +45,24 @@
           "description": "Parameter for the configuration"
         }
       },
+      "StorageAccountName": {
+        "type":"string",
+        "metadata": {
+          "description": "Name of the storage account"
+        }
+      },
+      "StorageKey": {
+        "type":"securestring",
+        "metadata": {
+          "description": "Storage key for the website files"
+        }
+      },
+      "StorageContainer": {
+        "type":"string",
+        "metadata": {
+          "description": "Container for the website files"
+        }
+      },
     "jobConfigurationData": {
       "type": "string",
       "metadata": {
@@ -93,6 +111,45 @@
                 "userName": "AutomationKey",
                 "password": "[listKeys(resourceId(resourceGroup().name, 'Microsoft.Automation/automationAccounts/', parameters('accountName')), '2015-01-01-preview').Keys[0].value]"
             }
+        },
+        {
+          "name": "StorageKey",
+          "type": "variables",
+          "apiVersion": "2015-10-31",
+          "dependsOn": [
+              "[resourceId('Microsoft.Automation/automationAccounts/', parameters('accountName'))]"
+          ],
+          "tags": {},
+          "properties": {
+              "description": "StorageKey",
+              "Value": "[parameters('StorageKey')]"
+          }
+        },
+        {
+          "name": "StorageAccountName",
+          "type": "variables",
+          "apiVersion": "2015-10-31",
+          "dependsOn": [
+              "[resourceId('Microsoft.Automation/automationAccounts/', parameters('accountName'))]"
+          ],
+          "tags": {},
+          "properties": {
+              "description": "StorageAccount",
+              "Value": "[parameters('StorageAccountName')]"
+          }
+        },
+        {
+          "name": "StorageContainer",
+          "type": "variables",
+          "apiVersion": "2015-10-31",
+          "dependsOn": [
+              "[resourceId('Microsoft.Automation/automationAccounts/', parameters('accountName'))]"
+          ],
+          "tags": {},
+          "properties": {
+              "description": "StorageContainer",
+              "Value": "[parameters('StorageContainer')]"
+          }
         },
         {
           "name": "[parameters('configurationName')]",
