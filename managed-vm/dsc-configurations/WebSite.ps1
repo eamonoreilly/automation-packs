@@ -8,6 +8,7 @@ Configuration WebSite
         $Parameters
     ) 
 
+    $Parameters = $Parameters -replace '\\','\\\\'   
     $InputParams = ConvertFrom-Json $Parameters
     $VMName = $InputParams.VMName
     $WebSiteName = $InputParams.WebSiteName
