@@ -1,0 +1,121 @@
+{
+	"$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+	  "dbServerName": {
+		"type": "string"
+	  },
+	  "dbLogin": {
+		"type": "string"
+	  },
+	  "dbPassword": {
+		"type": "string"
+	  },
+	  "dbServerVersion": {
+		"type": "string",
+		"defaultValue": "12.0"
+	  },
+	  "dbCollation": {
+		"type": "string",
+		"defaultValue": "SQL_Latin1_General_CP1_CI_AS"
+	  },
+	  "dbEdition": {
+		"type": "string",
+		"defaultValue": "Basic"
+	  },
+	  "dbMaxSize": {
+		"type": "string",
+		"defaultValue": "10737418240"
+	  },
+	  "dbServiceObjectiveLevel": {
+		"type": "string",
+		"defaultValue": "Basic"
+	  },
+	  "bacpacStorageKey": {
+		"type": "string"
+	  },
+	  "databaseName": {
+		"type": "string"
+	  },
+	  "databaseBacpacUrl": {
+		"type": "string"
+	  },
+	  "createSchema": {
+		"type":"string",
+		"defaultValue": "no",
+		"allowedValues": [
+			"yes",
+			"no"
+		]
+	  }
+	},
+	"variables": {
+	  "resourceGroupLocation": "[resourceGroup().location]"
+	},
+	"resources": [
+	  {
+		"type": "Microsoft.Sql/servers",
+		"apiVersion": "2014-04-01-preview",
+		"properties": {
+		  "administratorLogin": "[parameters('dbLogin')]",
+		  "administratorLoginPassword": "[parameters('dbPassword')]",
+		  "version": "[parameters('dbServerVersion')]"
+		},
+		"name": "[parameters('dbServerName')]",
+		"location": "[variables('resourceGroupLocation')]",
+		"resources": [
+		  {
+			  "type": "firewallrules",
+			  "apiVersion": "2014-04-01-preview",
+			  "location": "[variables('resourceGroupLocation')]",
+			  "dependsOn": [
+				  "[resourceId('Microsoft.Sql/servers', parameters('dbServerName'))]"
+			  ],
+			  "name": "AllowAllWindowsAzureIps",
+			  "properties": {
+				"endIpAddress": "0.0.0.0",
+				"startIpAddress": "0.0.0.0"
+			  }
+		  },
+		  {
+			  "name": "[parameters('databaseName')]",
+			  "type": "databases",
+			  "location": "[variables('resourceGroupLocation')]",
+			  "tags": {
+				"displayName": "Database"
+			  },
+			  "apiVersion": "2014-04-01-preview",
+			  "properties": {
+				"edition": "Basic",
+				"collation": "SQL_Latin1_General_CP1_CI_AS",
+				"maxSizeBytes": "1073741824",
+				"requestedServiceObjectiveName": "Basic"
+			  },
+			"dependsOn": [
+			  "[resourceId('Microsoft.Sql/servers', parameters('dbServerName'))]"
+			],
+			"resources": [
+			  {
+				"type": "extensions",
+				"apiVersion": "2014-04-01-preview",
+				"condition": "[equals(parameters('createSchema'), 'yes')]",
+				"properties": {
+				  "operationMode": "Import",
+				  "storageKey": "[parameters('bacpacStorageKey')]",
+				  "storageKeyType": "Primary",
+				  "administratorLogin": "[parameters('dbLogin')]",
+				  "administratorLoginPassword": "[parameters('dbPassword')]",
+				  "storageUri": "[parameters('databaseBacpacUrl')]"
+				},
+				"name": "Import",
+				"dependsOn": [
+				  "[resourceId('Microsoft.Sql/servers/databases', parameters('dbServerName'), parameters('databaseName'))]"
+				]
+			  }
+			]
+		  }
+		]
+	  }
+	]
+  }
+  

@@ -1,0 +1,64 @@
+{
+  "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "accountName": {
+      "type": "string",
+      "metadata": {
+        "description": "The name of the Automation account."
+      }
+    },
+    "regionId": {
+      "type": "string",
+      "metadata": {
+        "description": "The region for the Automation account."
+      }
+    }
+  },
+  "variables": {
+    "dscModules": {
+        "Modules": [
+        {
+          "moduleName": "HybridRunbookWorkerDsc",
+          "moduleUri": "https://devopsgallerystorage.blob.core.windows.net/packages/hybridrunbookworkerdsc.1.0.0.2.nupkg"
+        },
+        {
+          "moduleName": "cAzureStorage",
+          "moduleUri": "https://devopsgallerystorage.blob.core.windows.net/packages/cazurestorage.1.0.0.1.nupkg"   
+        },
+        {
+          "moduleName": "xWebAdministration",
+          "moduleUri": "https://devopsgallerystorage.blob.core.windows.net/packages/xwebadministration.2.2.0.nupkg"   
+        },
+        {
+          "moduleName": "xPSDesiredStateConfiguration",
+          "moduleUri": "https://devopsgallerystorage.blob.core.windows.net/packages/xpsdesiredstateconfiguration.8.4.0.nupkg"  
+        },
+        {
+          "moduleName": "xNetworking",
+          "moduleUri": "https://devopsgallerystorage.blob.core.windows.net/packages/xnetworking.5.7.0.nupkg"  
+        }
+      ]
+    }
+  },
+  "resources": [
+    {
+        "name": "[concat(parameters('accountName'), '/', variables('dscModules').Modules[copyIndex()].moduleName)]",
+        "type": "Microsoft.Automation/automationAccounts/modules",
+        "apiVersion": "2015-10-31",
+        "location": "[parameters('regionId')]",
+        "tags": { },
+        "copy": {
+          "name": "dscModules",
+          "count": "[length(variables('dscModules').Modules)]",
+          "mode": "Serial",
+          "batchSize": "[if(greater(length(variables('dscModules').Modules), 6), 7, length(variables('dscModules').Modules))]"
+      },
+        "properties": {
+          "contentLink": {
+            "uri": "[variables('dscModules').Modules[copyIndex()].moduleUri]"
+          }
+        }
+    }
+]
+}

@@ -53,19 +53,12 @@
     }
   },
   "variables": {
-    "dscModules": {
-      "HybridWorker": {
-        "moduleName": "HybridRunbookWorkerDsc",
-        "moduleUri": "https://devopsgallerystorage.blob.core.windows.net/packages/hybridrunbookworkerdsc.1.0.0.2.nupkg"
-      }
-    }
   },
-
   "resources": [
     {
       "name": "[parameters('accountName')]",
       "type": "Microsoft.Automation/automationAccounts",
-      "apiVersion": "2018-01-15",
+      "apiVersion": "2015-10-31",
       "location": "[parameters('regionId')]",
       "dependsOn": [ ],
       "tags": { },
@@ -75,20 +68,6 @@
         }
       },
       "resources": [
-        {
-          "name": "[concat(parameters('accountName'), '/', variables('dscModules').HybridWorker.moduleName)]",
-          "type": "microsoft.automation/automationAccounts/Modules",
-          "apiVersion": "2018-01-15",
-          "tags": { },
-          "dependsOn": [
-            "[concat('Microsoft.Automation/automationAccounts/', parameters('accountName'))]"
-          ],
-          "properties": {
-            "contentLink": {
-              "uri": "[variables('dscModules').HybridWorker.moduleUri]"
-            }
-          }
-        },
         {
             "name": "AutomationEndpoint",
             "type": "variables",
@@ -117,8 +96,8 @@
         },
         {
           "name": "[parameters('configurationName')]",
-          "type": "Configurations",
-          "apiVersion": "2018-01-15",
+          "type": "configurations",
+          "apiVersion": "2015-10-31",
           "location": "[parameters('regionId')]",
           "tags": { },
           "dependsOn": [
@@ -137,13 +116,12 @@
         },
         {
           "name": "[parameters('jobId')]",
-          "type": "Compilationjobs",
-          "apiVersion": "2018-01-15",
+          "type": "compilationjobs",
+          "apiVersion": "2015-10-31",
           "location": "parameters('regionId')]",
           "tags": { },
           "dependsOn": [
             "[concat('Microsoft.Automation/automationAccounts/', parameters('accountName'))]",
-            "[concat('Microsoft.Automation/automationAccounts/', parameters('accountName'),'/Modules/',variables('dscModules').HybridWorker.ModuleName)]",
             "[concat('Microsoft.Automation/automationAccounts/', parameters('accountName'),'/Configurations/', parameters('configurationName'))]"
           ],
           "properties": {
