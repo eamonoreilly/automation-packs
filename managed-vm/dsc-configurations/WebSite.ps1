@@ -5,7 +5,7 @@ Configuration WebSite
         # Name of the VM for the hybrid worker group 
         [Parameter(Mandatory)] 
         [ValidateNotNullOrEmpty()] 
-        [String]$Parameters
+        $Parameters
     ) 
 
     $InputParams = ConvertFrom-Json $Parameters
