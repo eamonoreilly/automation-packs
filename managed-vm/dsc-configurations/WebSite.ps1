@@ -1,4 +1,4 @@
-Configuration IgniteDemo
+Configuration WebSite
 {
    param 
     (  
