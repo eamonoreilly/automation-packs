@@ -49,6 +49,47 @@
         "metadata": {
           "description": "The name of the workspace."
         }
+      },
+    "configurationVMParameter": {
+      "type": "string",
+      "metadata": {
+        "description": "The parameters for the DSC configuration"
+      }
+    },
+    "dbServerName": {
+        "type": "string"
+      },
+        "dbLogin": {
+        "type": "string"
+      },
+        "dbPassword": {
+        "type": "securestring"
+      },
+      "StorageKey": {
+        "type": "securestring"
+      },
+      "StorageAccountName": {
+        "type": "string"
+      },
+      "StorageContainer": {
+        "type": "string"
+      },
+      "bacpacStorageKey": {
+        "type": "securestring"
+      },
+        "databaseName": {
+        "type": "string"
+      },
+        "databaseBacpacUrl": {
+        "type": "string"
+      },
+        "createSchema": {
+        "type":"string",
+        "defaultValue": "no",
+        "allowedValues": [
+          "yes",
+          "no"
+        ]
       }
   },
   "resources": [
@@ -104,6 +145,29 @@
 {
   "type": "Microsoft.Resources/deployments",
   "apiVersion": "2017-05-10",
+  "name": "AutomationAccount",
+  "dependsOn": [
+    "[concat('Microsoft.Resources/deployments/', 'AzureAutomationHybridWorkerSolution')]"
+],
+  "properties": {
+    "mode": "Incremental",
+    "templateLink": {
+      "uri": "https://raw.githubusercontent.com/eamonoreilly/automation-packs/master/managed-vm/linked-templates/automationaccount.json",
+      "contentVersion": "1.0.0.0"
+    },
+    "parameters": {
+      "accountName": {
+        "value": "[parameters('accountName')]"
+      },
+      "regionId": {
+        "value": "[parameters('accountWorkspaceRegion')]"
+      }
+    }
+}          
+},
+{
+  "type": "Microsoft.Resources/deployments",
+  "apiVersion": "2017-05-10",
   "name": "ChangeTrackingSolution",
   "dependsOn": [
     "[concat('Microsoft.Resources/deployments/', 'AzureAutomationHybridWorkerSolution')]"
@@ -132,11 +196,12 @@
           "apiVersion": "2017-05-10",
           "name": "Automation",
           "dependsOn": [
+            "[concat('Microsoft.Resources/deployments/', 'AutomationModules')]"
         ],
           "properties": {
             "mode": "Incremental",
             "templateLink": {
-              "uri": "https://raw.githubusercontent.com/azureautomation/automation-packs/master/managed-vm/linked-templates/hybridworkerwithdsc.json",
+              "uri": "https://raw.githubusercontent.com/eamonoreilly/automation-packs/master/managed-vm/linked-templates/hybridworkerwithdsc.json",
               "contentVersion": "1.0.0.0"
             },
             "parameters": {
@@ -146,17 +211,26 @@
               "regionId": {
                 "value": "[if(equals(parameters('accountWorkspaceRegion'), 'East US'), 'East US2', parameters('accountWorkspaceRegion'))]"
               },
+              "StorageKey":{
+                "value": "[parameters('StorageKey')]"
+              },
+              "StorageAccountName":{
+                 "value": "[parameters('StorageAccountName')]"
+              },
+              "StorageContainer":{
+                "value": "[parameters('StorageContainer')]"
+             },
             "configurationName": {
-                "value": "HybridWorkerConfig"
+                "value": "WebSite"
             },
             "configurationURI": {
-                "value": "https://raw.githubusercontent.com/azureautomation/automation-packs/master/managed-vm/dsc-configurations/HybridWorkerConfig.ps1"
+                "value": "https://raw.githubusercontent.com/eamonoreilly/automation-packs/master/managed-vm/dsc-configurations/WebSite.ps1"
             },
             "JobId": {
                 "value": "[guid(resourceGroup().id, deployment().name)]" 
             },
-            "configurationVMParameter": {
-                "value": "[parameters('VMName')]"
+            "configurationVMParameter": {          
+                "value": "[parameters('configurationVMParameter')]"
             },
             "jobConfigurationData": {
                 "value":  "{\"AllNodes\":[{\"NodeName\":  \"*\",\"PSDscAllowPlainTextPassword\":  true}]}"
@@ -271,7 +345,7 @@
         "value": "[resourceGroup().name]"
       },
       "nodeConfigurationName": {
-        "value": "[concat('HybridWorkerConfig.', parameters('VMName'))]"
+        "value": "[concat('Website.', parameters('VMName'))]"
       },      
       "vmName": {
         "value": "[parameters('VMName')]"
@@ -281,6 +355,67 @@
       }
     }
 }          
+},
+{
+  "type": "Microsoft.Resources/deployments",
+  "apiVersion": "2017-05-10",
+  "name": "SQLServerWithDatabase",
+  "dependsOn": [
+
+],
+  "properties": {
+    "mode": "Incremental",
+    "templateLink": {
+      "uri": "https://raw.githubusercontent.com/eamonoreilly/automation-packs/master/managed-vm/linked-templates/sqlserverwithdatabase.json",
+      "contentVersion": "1.0.0.0"
+    },
+    "parameters": {
+      "dbServerName": {
+        "value": "[parameters('dbServerName')]"
+      },
+      "dbLogin": {
+        "value": "[parameters('dbLogin')]"
+      },
+      "dbPassword": {
+        "value": "[parameters('dbPassword')]"
+      },      
+      "bacpacStorageKey": {
+        "value": "[parameters('bacpacStorageKey')]"
+      },
+      "databaseName": {
+        "value": "[parameters('databaseName')]"
+      },      
+      "databaseBacpacUrl": {
+        "value": "[parameters('databaseBacpacUrl')]"
+      },
+      "createSchema": {
+        "value": "[parameters('createSchema')]"
+      }
+    }
+}          
+},
+{
+  "type": "Microsoft.Resources/deployments",
+  "apiVersion": "2017-05-10",
+  "name": "AutomationModules",
+  "dependsOn": [
+    "[concat('Microsoft.Resources/deployments/', 'AutomationAccount')]"
+],
+  "properties": {
+    "mode": "Incremental",
+    "templateLink": {
+      "uri": "https://raw.githubusercontent.com/eamonoreilly/automation-packs/master/managed-vm/linked-templates/automationmodules.json",
+      "contentVersion": "1.0.0.0"
+    },
+    "parameters": {
+      "accountName": {
+        "value": "[parameters('accountName')]"
+      },
+      "regionId": {
+        "value": "[resourceGroup().location]"
+      }
+    }
+  }
 },
 {
   "type": "Microsoft.Resources/deployments",
