@@ -15,6 +15,11 @@ Configuration WebSite
     $DestinationPath = $InputParams.DestinationPath
     $SourcePath = $InputParams.SourcePath
 
+    # Remove extra slash in paths
+    $DestinationPath = $DestinationPath.Replace('\\','\')
+    $SourcePath = $SourcePath.Replace('\\','\')
+
+
     # Import the module that defines custom resources 
     Import-DscResource -Module cAzureStorage 
     Import-DscResource -ModuleName xWebAdministration 
